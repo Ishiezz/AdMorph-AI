@@ -1,7 +1,7 @@
 # AdMorph-AI
 ### A Landing Page Personalizer
  
-A tool that takes an ad creative + landing page URL and returns personalized landing page copy aligned with the ad — applying CRO principles automatically.
+AdMorph AI is a real-time personalization engine that aligns landing page messaging with ad intent to improve conversion rates without modifying the underlying website.
  
 ---
  
@@ -14,7 +14,7 @@ When users click an ad and land on a generic homepage, conversion drops. This to
 3. **Generating personalized copy** — Rewrites only headline, subheadline, CTA, and hero copy to match the ad
 4. **Showing a before/after diff** — Clear comparison of what changed and why
  
-> The page layout and brand identity are never touched. Only the message changes.
+> The page layout, structure, navigation, and brand identity remain unchanged — only the messaging is intelligently optimized to align with the ad.
  
 ---
  
@@ -166,6 +166,13 @@ npm run dev
 ```
  
 ---
+
+## Why This Improves Conversion
+
+- Reduces cognitive dissonance between ad and landing page  
+- Reinforces user intent immediately  
+- Improves clarity and relevance  
+- Increases trust by matching expectations set by the ad  
  
 ## What I'd Build Next (PM Roadmap)
  
