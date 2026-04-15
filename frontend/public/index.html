@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AdMorph AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:       #1a1a18;
+      --ink-2:     #5a5a54;
+      --ink-3:     #9a9a90;
+      --paper:     #fafaf7;
+      --paper-2:   #f2f2ed;
+      --paper-3:   #e8e8e0;
+      --accent:    #2d6a4f;
+      --accent-lt: #d8ede3;
+      --warn:      #92400e;
+      --warn-lt:   #fef3c7;
+      --border:    rgba(26,26,24,0.1);
+      --serif:     'Instrument Serif', Georgia, serif;
+      --sans:      'Geist', system-ui, sans-serif;
+      --r:         8px;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+   
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .wordmark {
+      font-family: var(--serif);
+      font-size: 22px;
+      color: var(--ink);
+      letter-spacing: -0.3px;
+    }
+
+    .wordmark em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .nav-tag {
+      font-size: 12px;
+      color: var(--ink-3);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+
+    main {
+      max-width: 620px;
+      margin: 0 auto;
+      padding: 64px 24px 96px;
+    }
+
+    
+    .page-header {
+      margin-bottom: 48px;
+    }
+
+    .page-header h1 {
+      font-family: var(--serif);
+      font-size: 38px;
+      font-weight: 400;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+      color: var(--ink);
+    }
+
+    .page-header h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .page-header p {
+      font-size: 15px;
+      color: var(--ink-2);
+      max-width: 440px;
+      line-height: 1.65;
+    }
+
+
+    .section {
+      margin-bottom: 32px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+   
+    .upload-area {
+      border: 1.5px dashed var(--paper-3);
+      border-radius: var(--r);
+      padding: 28px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+      background: var(--paper-2);
+    }
+
+    .upload-area:hover {
+      border-color: var(--accent);
+      background: var(--accent-lt);
+    }
+
+    .upload-area input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--paper);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 16px;
+    }
+
+    .upload-area .primary-text {
+      font-size: 14px;
+      color: var(--ink);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .upload-area .secondary-text {
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+
+    #img-preview {
+      display: none;
+      max-height: 100px;
+      border-radius: 6px;
+      margin-top: 12px;
+      border: 1px solid var(--border);
+    }
+
+    
+    .or-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 14px 0;
+      color: var(--ink-3);
+      font-size: 12px;
+    }
+    .or-row::before, .or-row::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .field { margin-bottom: 16px; }
+
+    label.field-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    label.field-label span {
+      font-weight: 400;
+      color: var(--ink-3);
+      font-size: 12px;
+    }
+
+    input[type="url"], input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: var(--paper);
+      font-family: var(--sans);
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(45,106,79,0.08);
+    }
+
+    input::placeholder { color: var(--ink-3); }
+
+   
+    .btn-primary {
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      border-radius: var(--r);
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.1px;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: #2a2a26; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+ 
+    .error-banner {
+      display: none;
+      background: var(--warn-lt);
+      border: 1px solid #fcd34d;
+      border-radius: var(--r);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--warn);
+      margin-bottom: 16px;
+    }
+    .error-banner.show { display: block; }
+
+    #loading {
+      display: none;
+      padding: 48px 0;
+      text-align: center;
+    }
+
+    #loading.show { display: block; }
+
+    .loader-ring {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--paper-3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loader-steps {
+      list-style: none;
+      display: inline-block;
+      text-align: left;
+    }
+
+    .loader-steps li {
+      font-size: 13px;
+      color: var(--ink-3);
+      padding: 3px 0;
+      transition: color 0.3s;
+    }
+    .loader-steps li.active { color: var(--ink); }
+    .loader-steps li.done { color: var(--accent); }
+    .loader-steps li.done::before { content: '✓  '; }
+    .loader-steps li.active::before { content: '·  '; }
+    .loader-steps li:not(.active):not(.done)::before { content: '   '; }
+
+
+    #results { display: none; }
+    #results.show { display: block; }
+
+    .result-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .result-header h2 {
+      font-family: var(--serif);
+      font-size: 28px;
+      font-weight: 400;
+    }
+
+    .result-tag {
+      font-size: 11px;
+      color: var(--accent);
+      background: var(--accent-lt);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+
+    .pill-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .pill {
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      color: var(--ink-2);
+      background: var(--paper-2);
+    }
+
+    .pill strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+   
+    .diff-block {
+      margin-bottom: 32px;
+    }
+
+    .diff-block-title {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--ink-3);
+      margin-bottom: 14px;
+    }
+
+    .diff-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .diff-row-label {
+      padding: 14px 16px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ink-3);
+      background: var(--paper-2);
+      border-right: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+
+    .diff-before {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--ink-3);
+      text-decoration: line-through;
+      border-right: 1px solid var(--border);
+      background: var(--paper);
+    }
+
+    .diff-after {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--ink);
+      font-weight: 500;
+      background: var(--accent-lt);
+    }
+
+  
+    .rationale {
+      border-left: 2px solid var(--accent);
+      padding: 14px 18px;
+      margin-bottom: 32px;
+      background: var(--paper-2);
+      border-radius: 0 var(--r) var(--r) 0;
+    }
+
+    .rationale p {
+      font-size: 14px;
+      color: var(--ink-2);
+      line-height: 1.65;
+    }
+
+
+    .warning-box {
+      display: none;
+      background: var(--warn-lt);
+      border: 1px solid #fcd34d;
+      border-radius: var(--r);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--warn);
+      margin-bottom: 20px;
+    }
+    .warning-box.show { display: block; }
+
+  
+    .btn-ghost {
+      padding: 9px 20px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: transparent;
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--ink-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-ghost:hover { border-color: var(--ink-3); color: var(--ink); }
+
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 28px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="wordmark">AdMorph <em>AI</em></div>
+    
+  </nav>
+
+  <main>
+
+    <div class="page-header">
+      <h1>Make your landing page<br/>feel like your <em>ad.</em></h1>
+      <p>Drop in your ad and landing page. We’ll rewrite the key copy so it actually matches what users clicked on.</p>
+    </div>
+
+
+    <div id="form-section">
+
+      <div class="section">
+        <div class="section-label">Ad creative</div>
+
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="ad-file" accept="image/*"/>
+          <div class="upload-icon">↑</div>
+          <p class="primary-text">Drop your ad image here</p>
+          <p class="secondary-text">JPG, PNG, WebP — or paste a URL below</p>
+          <img id="img-preview"/>
+        </div>
+
+        <div class="or-row">or</div>
+
+        <div class="field">
+          <label class="field-label" for="ad-url">
+            Ad image URL <span>(public link)</span>
+          </label>
+          <input type="url" id="ad-url" placeholder="Got a link to your ad? Paste it here" />
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-label">Landing page</div>
+        <div class="field">
+          <label class="field-label" for="page-url">
+            Landing page URL
+          </label>
+          <input type="url" id="page-url" placeholder="Paste your landing page URL" />
+          <p class="helper-text">This is the page users see after clicking your ad</p>
+        </div>
+      </div>
+
+      <div class="error-banner" id="error-banner"></div>
+
+      <button class="btn-primary" id="submit-btn" onclick="handleSubmit()">
+        Generate personalized page
+      </button>
+
+    </div>
+
+ 
+    <div id="loading">
+      <div class="loader-ring"></div>
+      <ul class="loader-steps" id="loader-steps">
+        <li id="ls-1">Scraping landing page</li>
+        <li id="ls-2">Analysing ad with Vision AI</li>
+        <li id="ls-3">Writing personalized copy</li>
+        <li id="ls-4">Checking for hallucinations</li>
+      </ul>
+    </div>
+
+  
+    <div id="results">
+
+      <div class="result-header">
+        <h2>Here's your personalized page</h2>
+        <span class="result-tag">Done</span>
+      </div>
+
+      <div class="section-label" style="margin-bottom:16px">What the AI read from your ad</div>
+      <div class="pill-grid" id="ad-pills"></div>
+
+      <hr/>
+
+      <div class="warning-box" id="warning-box"></div>
+
+      <div class="diff-block">
+        <div class="diff-block-title">Before → after</div>
+        <div id="diff-rows"></div>
+      </div>
+
+      <hr/>
+
+      <div class="rationale" id="rationale"></div>
+
+      <button class="btn-ghost" onclick="resetForm()">← Try another</button>
+
+    </div>
+
+  </main>
+
+  <script>
+    const $ = id => document.getElementById(id);
+
+ 
+    $('ad-file').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const prev = $('img-preview');
+      prev.src = URL.createObjectURL(file);
+      prev.style.display = 'block';
+    });
+
+
+    const ua = $('upload-area');
+    ua.addEventListener('dragover', e => { e.preventDefault(); ua.style.borderColor = 'var(--accent)'; });
+    ua.addEventListener('dragleave', () => { ua.style.borderColor = ''; });
+    ua.addEventListener('drop', e => {
+      e.preventDefault();
+      ua.style.borderColor = '';
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) {
+        $('ad-file').files = e.dataTransfer.files;
+        $('img-preview').src = URL.createObjectURL(file);
+        $('img-preview').style.display = 'block';
+      }
+    });
+
+    /* ── LOADING ANIMATION ── */
+    let loaderTimer;
+    function startLoader() {
+      const ids = ['ls-1','ls-2','ls-3','ls-4'];
+      let i = 0;
+      loaderTimer = setInterval(() => {
+        if (i > 0) $(ids[i-1]).className = 'done';
+        if (i < ids.length) { $(ids[i]).className = 'active'; i++; }
+        else clearInterval(loaderTimer);
+      }, 2400);
+    }
+
+    function stopLoader() {
+      clearInterval(loaderTimer);
+      ['ls-1','ls-2','ls-3','ls-4'].forEach(id => $(id).className = '');
+    }
+
+
+    function showError(msg) {
+      const b = $('error-banner');
+      b.textContent = msg;
+      b.classList.add('show');
+    }
+
+    function clearError() {
+      $('error-banner').classList.remove('show');
+    }
+
+    async function handleSubmit() {
+      clearError();
+      const pageUrl  = $('page-url').value.trim();
+      const adUrl    = $('ad-url').value.trim();
+      const adFile   = $('ad-file').files[0];
+
+      if (!pageUrl)        return showError('Please enter your landing page URL.');
+      if (!adFile && !adUrl) return showError('Please upload an ad image or paste an image URL.');
+
+      $('form-section').style.display = 'none';
+      $('loading').classList.add('show');
+      startLoader();
+
+      try {
+        const form = new FormData();
+        form.append('landingPageUrl', pageUrl);
+        if (adFile)  form.append('adImage', adFile);
+        else         form.append('adImageUrl', adUrl);
+
+        const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
+        const res  = await fetch(`${API}/api/personalize`, { method: 'POST', body: form });
+        const data = await res.json();
+
+        stopLoader();
+        $('loading').classList.remove('show');
+
+        if (!res.ok || !data.success) throw new Error(data.error || 'Something went wrong.');
+
+        renderResults(data);
+
+      } catch (err) {
+        stopLoader();
+        $('loading').classList.remove('show');
+        $('form-section').style.display = 'block';
+        showError(err.message);
+      }
+    }
+
+
+    function renderResults(data) {
+      const ad = data.adAnalysis;
+      const p  = data.personalized;
+      const d  = data.diff;
+
+
+      const pillFields = [
+        ['Offer',    ad.primaryOffer],
+        ['Audience', ad.targetAudience],
+        ['Tone',     ad.tone],
+        ['Urgency',  ad.urgency],
+        ['Ad CTA',   ad.ctaText],
+      ];
+      $('ad-pills').innerHTML = pillFields
+        .filter(([,v]) => v)
+        .map(([k,v]) => `<div class="pill"><strong>${k}:</strong> ${v}</div>`)
+        .join('');
+
+      /* warnings */
+      if (data.warnings && data.warnings.length) {
+        $('warning-box').textContent = '⚠ ' + data.warnings.join(' — ');
+        $('warning-box').classList.add('show');
+      }
+
+      /* diff rows */
+      const rows = [
+        ['Headline',     d.before.headline,       d.after.headline],
+        ['Subheadline',  d.before.subheadline,    d.after.subheadline],
+        ['CTA button',   d.before.ctaText,        d.after.ctaText],
+        ['Hero copy',    '—',                     p.heroBody],
+      ];
+      $('diff-rows').innerHTML = rows.map(([label, before, after]) => `
+        <div class="diff-row">
+          <div class="diff-row-label">${label}</div>
+          <div class="diff-before">${before || '—'}</div>
+          <div class="diff-after">${after || '—'}</div>
+        </div>
+      `).join('');
+
+      /* rationale */
+      $('rationale').innerHTML = `<p>${p.changeRationale || 'Changes aligned to ad audience and offer.'}</p>`;
+
+      $('results').classList.add('show');
+      $('results').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    /* ── RESET ── */
+    function resetForm() {
+      $('results').classList.remove('show');
+      $('warning-box').classList.remove('show');
+      $('form-section').style.display = 'block';
+      $('ad-file').value = '';
+      $('ad-url').value = '';
+      $('page-url').value = '';
+      $('img-preview').style.display = 'none';
+      clearError();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+
+</body>
+</html>
