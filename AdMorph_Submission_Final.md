@@ -4,8 +4,10 @@ Ad-to-Landing-Page Personalization Engine
 Troopod AI PM Internship Assignment
 Submitted by: Isha Singh
 GitHub: https://github.com/Ishiezz/AdMorph-AI
-Live Demo: [Add deployed URL]
-Demo Video: [Add Loom / Drive URL]
+
+Live Demo: [https://admorph-ai-6d1v.onrender.com](https://admorph-ai-6d1v.onrender.com)
+
+Demo Video: [https://drive.google.com/file/d/1PDDATBmu9gvZnXXK5C80a9YPiKWvzH-p/view?usp=sharing](https://drive.google.com/file/d/1PDDATBmu9gvZnXXK5C80a9YPiKWvzH-p/view?usp=sharing)
 
 ## Overview
 
