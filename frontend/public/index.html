@@ -1,713 +1,556 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AdMorph AI</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --ink:       #1a1a18;
-      --ink-2:     #5a5a54;
-      --ink-3:     #9a9a90;
-      --paper:     #fafaf7;
-      --paper-2:   #f2f2ed;
-      --paper-3:   #e8e8e0;
-      --accent:    #2d6a4f;
-      --accent-lt: #d8ede3;
-      --warn:      #92400e;
-      --warn-lt:   #fef3c7;
-      --border:    rgba(26,26,24,0.1);
-      --serif:     'Instrument Serif', Georgia, serif;
-      --sans:      'Geist', system-ui, sans-serif;
-      --r:         8px;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --ink:#1a1a18;--ink2:#5a5a54;--ink3:#9a9a90;
+      --paper:#fafaf7;--paper2:#f2f2ed;--paper3:#e8e8e0;
+      --accent:#2d6a4f;--accent-lt:#d8ede3;
+      --red-lt:#fdecea;--red:#c0392b;
+      --warn:#92400e;--warn-lt:#fef3c7;
+      --border:rgba(26,26,24,0.1);
+      --serif:'Instrument Serif',Georgia,serif;
+      --sans:'Geist',system-ui,sans-serif;
+      --r:8px;
     }
+    body{font-family:var(--sans);background:var(--paper);color:var(--ink);min-height:100vh;font-size:15px;line-height:1.6}
+    nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;border-bottom:1px solid var(--border)}
+    .wordmark{font-family:var(--serif);font-size:22px;letter-spacing:-0.3px}
+    .wordmark em{font-style:italic;color:var(--accent)}
+    .nav-tag{font-size:11px;color:var(--ink3);letter-spacing:0.8px;text-transform:uppercase}
+    main{max-width:980px;margin:0 auto;padding:64px 24px 96px}
+    #form-section{max-width:620px}
+    .page-header{margin-bottom:48px}
+    .page-header h1{font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.2;letter-spacing:-0.5px;margin-bottom:12px}
+    .page-header h1 em{font-style:italic;color:var(--accent)}
+    .page-header p{font-size:15px;color:var(--ink2);max-width:440px;line-height:1.65}
+    .section{margin-bottom:32px}
+    .section-label{font-size:11px;font-weight:500;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+    .upload-area{border:1.5px dashed var(--paper3);border-radius:var(--r);padding:28px 24px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;position:relative;background:var(--paper2)}
+    .upload-area:hover,.upload-area.drag-over{border-color:var(--accent);background:var(--accent-lt)}
+    .upload-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upload-icon{width:36px;height:36px;border:1px solid var(--border);border-radius:6px;background:var(--paper);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:16px}
+    .upload-area .primary-text{font-size:14px;color:var(--ink);font-weight:500;margin-bottom:4px}
+    .upload-area .secondary-text{font-size:12px;color:var(--ink3)}
+    #img-preview{display:none;max-height:100px;border-radius:6px;margin-top:12px;border:1px solid var(--border)}
+    .or-row{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--ink3);font-size:12px}
+    .or-row::before,.or-row::after{content:'';flex:1;height:1px;background:var(--border)}
+    .field{margin-bottom:16px}
+    label.field-label{display:block;font-size:13px;font-weight:500;color:var(--ink);margin-bottom:6px}
+    label.field-label span{font-weight:400;color:var(--ink3);font-size:12px}
+    .helper-text{font-size:12px;color:var(--ink3);margin-top:5px}
+    input[type="url"]{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:var(--r);background:var(--paper);font-family:var(--sans);font-size:14px;color:var(--ink);outline:none;transition:border-color .15s}
+    input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(45,106,79,.08)}
+    input::placeholder{color:var(--ink3)}
+    .btn-primary{width:100%;padding:13px 20px;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,transform .1s;margin-top:8px}
+    .btn-primary:hover:not(:disabled){background:#2a2a26}
+    .btn-primary:active:not(:disabled){transform:scale(0.99)}
+    .btn-primary:disabled{opacity:.4;cursor:not-allowed}
 
-    body {
-      font-family: var(--sans);
-      background: var(--paper);
-      color: var(--ink);
-      min-height: 100vh;
-      font-size: 15px;
-      line-height: 1.6;
+    /* ERROR — 3-part: title, body, action */
+    .error-banner{display:none;border-radius:var(--r);padding:16px 18px;margin-bottom:16px;border-left:3px solid}
+    .error-banner.show{display:block}
+    .error-banner.type-warn{background:var(--warn-lt);border-color:var(--warn)}
+    .error-banner.type-error{background:var(--red-lt);border-color:var(--red)}
+    .error-title{font-size:13px;font-weight:500;margin-bottom:4px}
+    .error-banner.type-warn .error-title{color:var(--warn)}
+    .error-banner.type-error .error-title{color:var(--red)}
+    .error-body{font-size:13px;color:var(--ink2);line-height:1.55}
+    .error-action{font-size:12px;color:var(--ink3);margin-top:8px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.06)}
+    .retry-btn{display:inline-block;margin-top:8px;padding:6px 14px;background:var(--ink);color:var(--paper);border:none;border-radius:var(--r);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:background .15s}
+    .retry-btn:hover{background:#2a2a26}
+
+    /* LOADING */
+    #loading{display:none;padding:48px 0;text-align:center}
+    #loading.show{display:block}
+    .loader-ring{width:32px;height:32px;border:2px solid var(--paper3);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;margin:0 auto 20px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader-steps{list-style:none;display:inline-block;text-align:left}
+    .loader-steps li{font-size:13px;color:var(--ink3);padding:3px 0;transition:color .3s}
+    .loader-steps li::before{display:inline-block;width:20px;content:'  '}
+    .loader-steps li.active{color:var(--ink)}
+    .loader-steps li.active::before{content:'· '}
+    .loader-steps li.done{color:var(--accent)}
+    .loader-steps li.done::before{content:'✓ '}
+
+    /* RESULTS */
+    #results{display:none}
+    #results.show{display:block}
+    .result-header{display:flex;align-items:baseline;gap:12px;margin-bottom:32px}
+    .result-header h2{font-family:var(--serif);font-size:28px;font-weight:400}
+    .result-tag{font-size:11px;color:var(--accent);background:var(--accent-lt);padding:3px 10px;border-radius:20px;font-weight:500;letter-spacing:0.3px}
+    .pill-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px}
+    .pill{padding:6px 14px;border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--ink2);background:var(--paper2)}
+    .pill strong{color:var(--ink);font-weight:500}
+    .preview-block{margin-bottom:32px}
+    .preview-caption{font-size:13px;color:var(--ink3);margin:-4px 0 14px}
+    .preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .preview-card{border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--paper);box-shadow:0 18px 40px rgba(26,26,24,.06)}
+    .preview-browser{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--paper2)}
+    .preview-dot{width:8px;height:8px;border-radius:50%;background:var(--paper3)}
+    .preview-url{margin-left:4px;font-size:12px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .preview-hero{position:relative;padding:22px 22px 20px;min-height:360px;display:flex;flex-direction:column;justify-content:space-between}
+    .preview-hero.has-image::before{content:'';position:absolute;inset:0;background-image:var(--preview-image);background-size:cover;background-position:center;opacity:.14}
+    .preview-hero::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(250,250,247,.72),rgba(250,250,247,.95) 40%,rgba(250,250,247,1))}
+    .preview-top,.preview-copy,.preview-footer{position:relative;z-index:1}
+    .preview-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
+    .preview-brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .preview-favicon{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--paper2);object-fit:contain;padding:4px}
+    .preview-brand-text{min-width:0}
+    .preview-site{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .preview-page-title{font-size:11px;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .preview-badge{font-size:11px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;border-radius:999px;padding:5px 9px}
+    .preview-badge.before{background:var(--paper2);color:var(--ink3)}
+    .preview-badge.after{background:var(--accent-lt);color:var(--accent)}
+    .preview-copy h3{font-family:var(--serif);font-size:34px;font-weight:400;line-height:1.08;letter-spacing:-.6px;margin-bottom:12px;max-width:11ch}
+    .preview-copy p{font-size:14px;color:var(--ink2);max-width:42ch}
+    .preview-body{margin-top:16px;font-size:13px;color:var(--ink2);max-width:44ch}
+    .preview-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:26px}
+    .preview-cta{display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border-radius:10px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;min-width:132px}
+    .preview-meta{font-size:11px;color:var(--ink3);text-align:right;max-width:180px}
+    .preview-meta strong{display:block;color:var(--ink2);font-size:12px;font-weight:500}
+    .diff-block{margin-bottom:32px}
+    .diff-block-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--ink3);margin-bottom:14px}
+    .diff-row{display:grid;grid-template-columns:100px 1fr 1fr;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+    .diff-row-label{padding:14px 16px;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink3);background:var(--paper2);border-right:1px solid var(--border);display:flex;align-items:center}
+    .diff-before{padding:14px 16px;font-size:13px;color:var(--ink3);text-decoration:line-through;border-right:1px solid var(--border);background:var(--paper)}
+    .diff-before.empty{text-decoration:none;font-style:italic}
+    .diff-after{padding:14px 16px;font-size:13px;color:var(--ink);font-weight:500;background:var(--accent-lt)}
+    .rationale{border-left:2px solid var(--accent);padding:14px 18px;margin-bottom:32px;background:var(--paper2);border-radius:0 var(--r) var(--r) 0}
+    .rationale p{font-size:14px;color:var(--ink2);line-height:1.65}
+    .info-box{display:none;background:var(--warn-lt);border:1px solid rgba(146,64,14,.2);border-radius:var(--r);padding:10px 14px;font-size:12px;color:var(--warn);margin-bottom:16px}
+    .info-box.show{display:block}
+    .btn-ghost{padding:9px 20px;border:1px solid var(--border);border-radius:var(--r);background:transparent;font-family:var(--sans);font-size:13px;color:var(--ink2);cursor:pointer;transition:all .15s}
+    .btn-ghost:hover{color:var(--ink)}
+    .demo-box{margin-top:12px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r);background:var(--paper2)}
+    .demo-box p{font-size:12px;color:var(--ink2);line-height:1.55}
+    .demo-box strong{color:var(--ink)}
+    .preset-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .preset-btn{padding:8px 12px;border:1px solid var(--border);border-radius:999px;background:var(--paper);color:var(--ink2);font-size:12px;font-family:var(--sans);cursor:pointer;transition:all .15s}
+    .preset-btn:hover{border-color:var(--accent);color:var(--ink);background:var(--accent-lt)}
+    hr{border:none;border-top:1px solid var(--border);margin:28px 0}
+    @media (max-width:860px){
+      .preview-grid{grid-template-columns:1fr}
     }
-
-   
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 40px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .wordmark {
-      font-family: var(--serif);
-      font-size: 22px;
-      color: var(--ink);
-      letter-spacing: -0.3px;
-    }
-
-    .wordmark em {
-      font-style: italic;
-      color: var(--accent);
-    }
-
-    .nav-tag {
-      font-size: 12px;
-      color: var(--ink-3);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-
-    main {
-      max-width: 620px;
-      margin: 0 auto;
-      padding: 64px 24px 96px;
-    }
-
-    
-    .page-header {
-      margin-bottom: 48px;
-    }
-
-    .page-header h1 {
-      font-family: var(--serif);
-      font-size: 38px;
-      font-weight: 400;
-      line-height: 1.2;
-      letter-spacing: -0.5px;
-      margin-bottom: 12px;
-      color: var(--ink);
-    }
-
-    .page-header h1 em {
-      font-style: italic;
-      color: var(--accent);
-    }
-
-    .page-header p {
-      font-size: 15px;
-      color: var(--ink-2);
-      max-width: 440px;
-      line-height: 1.65;
-    }
-
-
-    .section {
-      margin-bottom: 32px;
-    }
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--ink-3);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-   
-    .upload-area {
-      border: 1.5px dashed var(--paper-3);
-      border-radius: var(--r);
-      padding: 28px 24px;
-      text-align: center;
-      cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
-      position: relative;
-      background: var(--paper-2);
-    }
-
-    .upload-area:hover {
-      border-color: var(--accent);
-      background: var(--accent-lt);
-    }
-
-    .upload-area input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .upload-icon {
-      width: 36px;
-      height: 36px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      background: var(--paper);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 12px;
-      font-size: 16px;
-    }
-
-    .upload-area .primary-text {
-      font-size: 14px;
-      color: var(--ink);
-      font-weight: 500;
-      margin-bottom: 4px;
-    }
-
-    .upload-area .secondary-text {
-      font-size: 12px;
-      color: var(--ink-3);
-    }
-
-    #img-preview {
-      display: none;
-      max-height: 100px;
-      border-radius: 6px;
-      margin-top: 12px;
-      border: 1px solid var(--border);
-    }
-
-    
-    .or-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 14px 0;
-      color: var(--ink-3);
-      font-size: 12px;
-    }
-    .or-row::before, .or-row::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    .field { margin-bottom: 16px; }
-
-    label.field-label {
-      display: block;
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--ink);
-      margin-bottom: 6px;
-    }
-
-    label.field-label span {
-      font-weight: 400;
-      color: var(--ink-3);
-      font-size: 12px;
-    }
-
-    input[type="url"], input[type="text"] {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      background: var(--paper);
-      font-family: var(--sans);
-      font-size: 14px;
-      color: var(--ink);
-      outline: none;
-      transition: border-color 0.15s;
-    }
-
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(45,106,79,0.08);
-    }
-
-    input::placeholder { color: var(--ink-3); }
-
-   
-    .btn-primary {
-      width: 100%;
-      padding: 13px 20px;
-      background: var(--ink);
-      color: var(--paper);
-      border: none;
-      border-radius: var(--r);
-      font-family: var(--sans);
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      letter-spacing: 0.1px;
-      transition: background 0.15s, transform 0.1s;
-      margin-top: 8px;
-    }
-
-    .btn-primary:hover:not(:disabled) { background: #2a2a26; }
-    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
-    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
- 
-    .error-banner {
-      display: none;
-      background: var(--warn-lt);
-      border: 1px solid #fcd34d;
-      border-radius: var(--r);
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--warn);
-      margin-bottom: 16px;
-    }
-    .error-banner.show { display: block; }
-
-    #loading {
-      display: none;
-      padding: 48px 0;
-      text-align: center;
-    }
-
-    #loading.show { display: block; }
-
-    .loader-ring {
-      width: 32px;
-      height: 32px;
-      border: 2px solid var(--paper-3);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.75s linear infinite;
-      margin: 0 auto 20px;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .loader-steps {
-      list-style: none;
-      display: inline-block;
-      text-align: left;
-    }
-
-    .loader-steps li {
-      font-size: 13px;
-      color: var(--ink-3);
-      padding: 3px 0;
-      transition: color 0.3s;
-    }
-    .loader-steps li.active { color: var(--ink); }
-    .loader-steps li.done { color: var(--accent); }
-    .loader-steps li.done::before { content: '✓  '; }
-    .loader-steps li.active::before { content: '·  '; }
-    .loader-steps li:not(.active):not(.done)::before { content: '   '; }
-
-
-    #results { display: none; }
-    #results.show { display: block; }
-
-    .result-header {
-      display: flex;
-      align-items: baseline;
-      gap: 12px;
-      margin-bottom: 32px;
-    }
-
-    .result-header h2 {
-      font-family: var(--serif);
-      font-size: 28px;
-      font-weight: 400;
-    }
-
-    .result-tag {
-      font-size: 11px;
-      color: var(--accent);
-      background: var(--accent-lt);
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
-
-
-    .pill-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 32px;
-    }
-
-    .pill {
-      padding: 6px 14px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 12px;
-      color: var(--ink-2);
-      background: var(--paper-2);
-    }
-
-    .pill strong {
-      color: var(--ink);
-      font-weight: 500;
-    }
-
-   
-    .diff-block {
-      margin-bottom: 32px;
-    }
-
-    .diff-block-title {
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--ink-3);
-      margin-bottom: 14px;
-    }
-
-    .diff-row {
-      display: grid;
-      grid-template-columns: 100px 1fr 1fr;
-      gap: 0;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      overflow: hidden;
-      margin-bottom: 10px;
-    }
-
-    .diff-row-label {
-      padding: 14px 16px;
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--ink-3);
-      background: var(--paper-2);
-      border-right: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-    }
-
-    .diff-before {
-      padding: 14px 16px;
-      font-size: 13px;
-      color: var(--ink-3);
-      text-decoration: line-through;
-      border-right: 1px solid var(--border);
-      background: var(--paper);
-    }
-
-    .diff-after {
-      padding: 14px 16px;
-      font-size: 13px;
-      color: var(--ink);
-      font-weight: 500;
-      background: var(--accent-lt);
-    }
-
-  
-    .rationale {
-      border-left: 2px solid var(--accent);
-      padding: 14px 18px;
-      margin-bottom: 32px;
-      background: var(--paper-2);
-      border-radius: 0 var(--r) var(--r) 0;
-    }
-
-    .rationale p {
-      font-size: 14px;
-      color: var(--ink-2);
-      line-height: 1.65;
-    }
-
-
-    .warning-box {
-      display: none;
-      background: var(--warn-lt);
-      border: 1px solid #fcd34d;
-      border-radius: var(--r);
-      padding: 12px 16px;
-      font-size: 13px;
-      color: var(--warn);
-      margin-bottom: 20px;
-    }
-    .warning-box.show { display: block; }
-
-  
-    .btn-ghost {
-      padding: 9px 20px;
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      background: transparent;
-      font-family: var(--sans);
-      font-size: 13px;
-      color: var(--ink-2);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .btn-ghost:hover { border-color: var(--ink-3); color: var(--ink); }
-
-
-    hr {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 28px 0;
+    @media (max-width:720px){
+      nav{padding:18px 20px}
+      main{padding:48px 18px 72px}
+      .preview-copy h3{font-size:30px}
+      .diff-row{grid-template-columns:88px 1fr 1fr}
     }
   </style>
 </head>
 <body>
 
-  <nav>
-    <div class="wordmark">AdMorph <em>AI</em></div>
-    
-  </nav>
+<nav>
+  <div class="wordmark">AdMorph <em>AI</em></div>
+  <span class="nav-tag">Troopod Assignment</span>
+</nav>
 
-  <main>
+<main>
+  <div class="page-header">
+    <h1>Make your landing page<br/>feel like your <em>ad.</em></h1>
+    <p>Drop in your ad and landing page URL. We'll rewrite the key copy so it matches what users clicked on — without touching the design.</p>
+  </div>
 
-    <div class="page-header">
-      <h1>Make your landing page<br/>feel like your <em>ad.</em></h1>
-      <p>Drop in your ad and landing page. We’ll rewrite the key copy so it actually matches what users clicked on.</p>
+  <div id="form-section">
+    <div class="section">
+      <div class="section-label">Ad creative</div>
+      <div class="upload-area" id="upload-area">
+        <input type="file" id="ad-file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif"/>
+        <div class="upload-icon">↑</div>
+        <p class="primary-text">Drop your ad image here</p>
+        <p class="secondary-text">JPG, PNG, WebP, HEIC, HEIF — or paste a direct image URL below</p>
+        <img id="img-preview" alt="Ad preview"/>
+      </div>
+      <div class="or-row">or</div>
+      <div class="field">
+        <label class="field-label" for="ad-url">Ad image URL <span>(must be a direct link to an image file)</span></label>
+        <input type="url" id="ad-url" placeholder="Got a link to your ad? Paste it here"/>
+      </div>
     </div>
 
-
-    <div id="form-section">
-
-      <div class="section">
-        <div class="section-label">Ad creative</div>
-
-        <div class="upload-area" id="upload-area">
-          <input type="file" id="ad-file" accept="image/*"/>
-          <div class="upload-icon">↑</div>
-          <p class="primary-text">Drop your ad image here</p>
-          <p class="secondary-text">JPG, PNG, WebP — or paste a URL below</p>
-          <img id="img-preview"/>
-        </div>
-
-        <div class="or-row">or</div>
-
-        <div class="field">
-          <label class="field-label" for="ad-url">
-            Ad image URL <span>(public link)</span>
-          </label>
-          <input type="url" id="ad-url" placeholder="Got a link to your ad? Paste it here" />
+    <div class="section">
+      <div class="section-label">Landing page</div>
+      <div class="field">
+        <label class="field-label" for="page-url">Landing page URL</label>
+        <input type="url" id="page-url" placeholder="Enter your landing page URL"/>
+        <p class="helper-text">The page users see after clicking your ad</p>
+      </div>
+      <div class="demo-box">
+        <p><strong>For the assignment demo:</strong> use a real brand landing page plus an actual ad screenshot from the same brand. The result feels strongest when the "before" preview clearly shows the original hero and the "after" preview shows the personalized copy on that same page shell.</p>
+        <div class="preset-row">
+          <button class="preset-btn" type="button" data-page="https://vercel.com/">Use Vercel homepage</button>
+          <button class="preset-btn" type="button" data-page="https://www.raycast.com/">Use Raycast homepage</button>
         </div>
       </div>
-
-      <div class="section">
-        <div class="section-label">Landing page</div>
-        <div class="field">
-          <label class="field-label" for="page-url">
-            Landing page URL
-          </label>
-          <input type="url" id="page-url" placeholder="Paste your landing page URL" />
-          <p class="helper-text">This is the page users see after clicking your ad</p>
-        </div>
-      </div>
-
-      <div class="error-banner" id="error-banner"></div>
-
-      <button class="btn-primary" id="submit-btn" onclick="handleSubmit()">
-        Generate personalized page
-      </button>
-
     </div>
 
- 
-    <div id="loading">
-      <div class="loader-ring"></div>
-      <ul class="loader-steps" id="loader-steps">
-        <li id="ls-1">Scraping landing page</li>
-        <li id="ls-2">Analysing ad with Vision AI</li>
-        <li id="ls-3">Writing personalized copy</li>
-        <li id="ls-4">Checking for hallucinations</li>
-      </ul>
+    <div class="error-banner type-error" id="error-banner">
+      <div class="error-title" id="error-title"></div>
+      <div class="error-body" id="error-body"></div>
+      <div class="error-action" id="error-action"></div>
     </div>
 
+    <button class="btn-primary" onclick="handleSubmit()">Generate personalized page</button>
+  </div>
+
+  <div id="loading">
+    <div class="loader-ring"></div>
+    <ul class="loader-steps">
+      <li id="ls-1">Scraping landing page</li>
+      <li id="ls-2">Analysing ad with Gemini Vision</li>
+      <li id="ls-3">Writing personalized copy</li>
+      <li id="ls-4">Running validation checks</li>
+    </ul>
+  </div>
+
+  <div id="results">
+    <div class="result-header">
+      <h2>Here's your personalized page</h2>
+      <span class="result-tag">Done</span>
+    </div>
+    <div class="section-label" style="margin-bottom:16px">What the AI read from your ad</div>
+    <div class="pill-grid" id="ad-pills"></div>
+    <hr/>
+    <div class="info-box" id="scrape-note"></div>
+    <div class="info-box" id="warning-box"></div>
+    <div class="preview-block">
+      <div class="diff-block-title">Landing page preview</div>
+      <p class="preview-caption">A recreated hero view of the original page and the personalized variant. This keeps the existing page structure while making the message match visible.</p>
+      <div class="preview-grid" id="page-previews"></div>
+    </div>
+    <div class="diff-block">
+      <div class="diff-block-title">Before → after</div>
+      <div id="diff-rows"></div>
+    </div>
+    <hr/>
+    <div class="rationale" id="rationale"></div>
+    <button class="btn-ghost" onclick="resetForm()" style="margin-top:8px">← Try another</button>
+  </div>
+</main>
+
+<script>
   
-    <div id="results">
+  const API_BASE = window.location.protocol === "file:" ? "http://localhost:3001" : window.location.origin;
 
-      <div class="result-header">
-        <h2>Here's your personalized page</h2>
-        <span class="result-tag">Done</span>
-      </div>
+  const $ = id => document.getElementById(id);
 
-      <div class="section-label" style="margin-bottom:16px">What the AI read from your ad</div>
-      <div class="pill-grid" id="ad-pills"></div>
+  function escapeHTML(value = "") {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
 
-      <hr/>
+  function getSafeThemeColor(value = "") {
+    const color = String(value).trim();
+    return /^#([0-9a-f]{3,8})$/i.test(color) ? color : "";
+  }
 
-      <div class="warning-box" id="warning-box"></div>
+  function renderPreviewCard({ variant, page, headline, subheadline, body, ctaText, metaDescription }) {
+    const host = page.hostname || "landing-page.com";
+    const site = page.siteName || host;
+    const pageTitle = page.title || "Landing page";
+    const favicon = page.faviconUrl || "";
+    const heroImage = page.ogImageUrl || "";
+    const themeColor = getSafeThemeColor(page.themeColor);
+    const buttonStyle = themeColor ? ` style="background:${escapeHTML(themeColor)}"` : "";
+    const heroStyle = heroImage ? ` style="--preview-image:url('${escapeHTML(heroImage)}')"` : "";
+    const badgeClass = variant === "after" ? "after" : "before";
+    const badgeText = variant === "after" ? "Personalized" : "Original";
+    const cta = ctaText || (variant === "after" ? "Get started" : "Learn more");
+    const summary = metaDescription || "Existing landing-page structure preserved. Only the hero messaging changes.";
 
-      <div class="diff-block">
-        <div class="diff-block-title">Before → after</div>
-        <div id="diff-rows"></div>
-      </div>
+    return `
+      <div class="preview-card">
+        <div class="preview-browser">
+          <span class="preview-dot"></span>
+          <span class="preview-dot"></span>
+          <span class="preview-dot"></span>
+          <span class="preview-url">${escapeHTML(host)}</span>
+        </div>
+        <div class="preview-hero${heroImage ? " has-image" : ""}"${heroStyle}>
+          <div class="preview-top">
+            <div class="preview-brand">
+              ${favicon ? `<img class="preview-favicon" src="${escapeHTML(favicon)}" alt="${escapeHTML(site)} favicon"/>` : `<div class="preview-favicon"></div>`}
+              <div class="preview-brand-text">
+                <div class="preview-site">${escapeHTML(site)}</div>
+                <div class="preview-page-title">${escapeHTML(pageTitle)}</div>
+              </div>
+            </div>
+            <span class="preview-badge ${badgeClass}">${badgeText}</span>
+          </div>
+          <div class="preview-copy">
+            <h3>${escapeHTML(headline || "No hero headline found")}</h3>
+            <p>${escapeHTML(subheadline || "No supporting subheadline was detected on the source page.")}</p>
+            <div class="preview-body">${escapeHTML(body || summary)}</div>
+          </div>
+          <div class="preview-footer">
+            <span class="preview-cta"${buttonStyle}>${escapeHTML(cta)}</span>
+            <div class="preview-meta"><strong>Meta description</strong>${escapeHTML(summary)}</div>
+          </div>
+        </div>
+      </div>`;
+  }
 
-      <hr/>
+  $("ad-file").addEventListener("change", e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    $("img-preview").src = URL.createObjectURL(f);
+    $("img-preview").style.display = "block";
+    $("ad-url").value = "";
+  });
 
-      <div class="rationale" id="rationale"></div>
+  const ua = $("upload-area");
+  ua.addEventListener("dragover",  e => { e.preventDefault(); ua.classList.add("drag-over"); });
+  ua.addEventListener("dragleave", () => ua.classList.remove("drag-over"));
+  ua.addEventListener("drop", e => {
+    e.preventDefault();
+    ua.classList.remove("drag-over");
+    const f = e.dataTransfer.files[0];
+    if (f?.type.startsWith("image/")) {
+      $("ad-file").files = e.dataTransfer.files;
+      $("img-preview").src = URL.createObjectURL(f);
+      $("img-preview").style.display = "block";
+    }
+  });
 
-      <button class="btn-ghost" onclick="resetForm()">← Try another</button>
+  document.querySelectorAll("[data-page]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      $("page-url").value = btn.dataset.page || "";
+      $("page-url").focus();
+    });
+  });
 
-    </div>
 
-  </main>
+  let loaderTimer;
+  function startLoader() {
+    const ids = ["ls-1","ls-2","ls-3","ls-4"];
+    let i = 0;
+    loaderTimer = setInterval(() => {
+      if (i > 0) $(ids[i-1]).className = "done";
+      if (i < ids.length) { $(ids[i]).className = "active"; i++; }
+      else clearInterval(loaderTimer);
+    }, 2800);
+  }
+  function stopLoader() {
+    clearInterval(loaderTimer);
+    ["ls-1","ls-2","ls-3","ls-4"].forEach(id => $(id).className = "");
+  }
 
-  <script>
-    const $ = id => document.getElementById(id);
+
+  const ERROR_MAP = {
+    RATE_LIMIT:       { title: "Gemini quota reached",     body: "The current Gemini model or project quota is exhausted right now.", action: "Wait for quota reset, enable billing, or switch to a higher-quota model. Then try again.", warn: true, retryBtn: true },
+    TIMEOUT:          { title: "Request timed out",        body: "The page or AI took too long to respond.", action: "Try a simpler landing page URL, or try again in a moment.", warn: true, retryBtn: true },
+    SCRAPE_FAIL:      { title: "Could not read the page",  body: "The landing page couldn't be accessed.", action: "Try a different URL. Static pages (like marketing sites) work best.", warn: true },
+    JS_RENDERED:      { title: "Page uses JavaScript",     body: "This page renders its content with React/Next.js. We extracted what we could.", action: "The personalization may be limited. For best results, try a simpler URL.", warn: true },
+    INVALID_URL:      { title: "Invalid URL",              body: "The URL doesn't look right.", action: "Make sure it starts with https:// and is a real web address." },
+    NO_API_KEY:       { title: "API key missing",          body: "The Gemini API key is not configured on the server.", action: "Add GEMINI_API_KEY=your_key to backend/.env and restart the server." },
+    NOT_AN_IMAGE:     { title: "That URL is not an image", body: "The URL you pasted doesn't point to an image file.", action: "Paste a direct .jpg or .png link, or upload the image file instead." },
+    IMAGE_FETCH_FAILED:{ title: "Could not load ad image", body: "The image URL couldn't be downloaded.", action: "Try uploading the image file directly instead." },
+    BAD_IMAGE:        { title: "Unsupported ad image",     body: "The ad image couldn't be processed in its current format.", action: "Use a direct PNG, JPEG, WEBP, HEIC, or HEIF image URL, or upload the file instead." },
+    VISION_FAILED:    { title: "Ad analysis failed",       body: "Gemini couldn't read the ad image.", action: "Try uploading a clearer image, or a different format (JPG/PNG).", retryBtn: true },
+    COPY_FAILED:      { title: "Copy generation failed",   body: "Gemini couldn't generate personalized copy.", action: "Please try again. If it keeps failing, wait a minute and retry.", retryBtn: true },
+    API_ERROR:        { title: "AI service error",         body: "The AI service returned an unexpected error.", action: "Please try again. If the problem persists, check your API key.", retryBtn: true },
+    MISSING_URL:      { title: "Landing page URL required", body: "Please enter the URL of the page you want to personalize.", action: "" },
+    MISSING_AD:       { title: "Ad image required",        body: "Please upload an ad image or paste a direct image URL.", action: "" },
+    NETWORK:          { title: "Cannot reach the server",  body: "The backend server is not running.", action: "Open your terminal and run: cd backend && node server.js" },
+  };
+
+  function showError(errorType, extraDetail) {
+    const cfg = ERROR_MAP[errorType] || { title: "Something went wrong", body: extraDetail || "An unexpected error occurred.", action: "Please try again." };
+    const banner = $("error-banner");
+    $("error-title").textContent  = cfg.title;
+    $("error-body").textContent   = cfg.body + (extraDetail && extraDetail !== cfg.body ? " " + extraDetail : "");
+    $("error-action").innerHTML   = cfg.action
+      ? `${cfg.action}${cfg.retryBtn ? ' <button class="retry-btn" onclick="handleSubmit()">Try again</button>' : ""}`
+      : "";
+    banner.className = `error-banner show ${cfg.warn ? "type-warn" : "type-error"}`;
+  }
+
+  function clearError() {
+    const b = $("error-banner");
+    b.classList.remove("show");
+    b.className = "error-banner type-error";
+  }
+
+
+  async function handleSubmit() {
+    clearError();
+    const pageUrl = $("page-url").value.trim();
+    const adUrl   = $("ad-url").value.trim();
+    const adFile  = $("ad-file").files[0];
+
+    if (!pageUrl)          return showError("MISSING_URL");
+    if (!adFile && !adUrl) return showError("MISSING_AD");
+    try { new URL(pageUrl); } catch { return showError("INVALID_URL"); }
+
+    $("form-section").style.display = "none";
+    $("results").classList.remove("show");
+    $("loading").classList.add("show");
+    startLoader();
+
+    try {
+      const form = new FormData();
+      form.append("landingPageUrl", pageUrl);
+      if (adFile) form.append("adImage", adFile);
+      else        form.append("adImageUrl", adUrl);
+
+      console.log("[AdMorph] Submitting to", `${API_BASE}/api/personalize`);
+      console.log("[AdMorph] pageUrl:", pageUrl, "| hasFile:", !!adFile, "| adUrl:", adUrl);
+
+      let res, data;
+      try {
+        res  = await fetch(`${API_BASE}/api/personalize`, { method:"POST", body:form });
+        data = await res.json();
+      } catch (netErr) {
+        console.error("[AdMorph] Network error:", netErr.message);
+        throw { errorType: "NETWORK" };
+      }
+
+    
+      console.log("[AdMorph] API response status:", res.status);
+      console.log("[AdMorph] API response data:", JSON.stringify(data, null, 2));
+
+      stopLoader();
+      $("loading").classList.remove("show");
+
+      if (!res.ok || !data.success) {
+        console.warn("[AdMorph] Error response:", data);
+        $("form-section").style.display = "block";
+        showError(data.errorType || "API_ERROR", data.message || "");
+        return;
+      }
+
+      renderResults(data);
+
+    } catch (err) {
+      stopLoader();
+      $("loading").classList.remove("show");
+      $("form-section").style.display = "block";
+      console.error("[AdMorph] Caught error:", err);
+      showError(err.errorType || "API_ERROR", err.message || "");
+    }
+  }
 
  
-    $('ad-file').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const prev = $('img-preview');
-      prev.src = URL.createObjectURL(file);
-      prev.style.display = 'block';
-    });
+  function renderResults(data) {
+    console.log("[AdMorph] Rendering results...");
+
+    
+    const ad = data.adAnalysis || {};
+    console.log("[AdMorph] adAnalysis:", ad);
+
+    $("ad-pills").innerHTML = [
+      ["Offer",    ad.primaryOffer],
+      ["Audience", ad.targetAudience],
+      ["Tone",     ad.tone],
+      ["Urgency",  ad.urgency],
+      ["Ad CTA",   ad.ctaText],
+    ]
+      .filter(([, v]) => v && v.trim())
+      .map(([k, v]) => `<div class="pill"><strong>${k}:</strong> ${v}</div>`)
+      .join("") || "<p style='font-size:13px;color:var(--ink3)'>No ad insights extracted — try a clearer image.</p>";
 
 
-    const ua = $('upload-area');
-    ua.addEventListener('dragover', e => { e.preventDefault(); ua.style.borderColor = 'var(--accent)'; });
-    ua.addEventListener('dragleave', () => { ua.style.borderColor = ''; });
-    ua.addEventListener('drop', e => {
-      e.preventDefault();
-      ua.style.borderColor = '';
-      const file = e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) {
-        $('ad-file').files = e.dataTransfer.files;
-        $('img-preview').src = URL.createObjectURL(file);
-        $('img-preview').style.display = 'block';
-      }
-    });
-
-   
-    let loaderTimer;
-    function startLoader() {
-      const ids = ['ls-1','ls-2','ls-3','ls-4'];
-      let i = 0;
-      loaderTimer = setInterval(() => {
-        if (i > 0) $(ids[i-1]).className = 'done';
-        if (i < ids.length) { $(ids[i]).className = 'active'; i++; }
-        else clearInterval(loaderTimer);
-      }, 2400);
+    const scrapeNote = $("scrape-note");
+    if (data.scrapeNote) {
+      scrapeNote.textContent = "⚠ " + data.scrapeNote;
+      scrapeNote.classList.add("show");
+    } else {
+      scrapeNote.classList.remove("show");
     }
 
-    function stopLoader() {
-      clearInterval(loaderTimer);
-      ['ls-1','ls-2','ls-3','ls-4'].forEach(id => $(id).className = '');
+ 
+    const warnBox = $("warning-box");
+    if (data.warnings?.length) {
+      warnBox.textContent = "⚠ Review these figures: " + data.warnings.join(" · ");
+      warnBox.classList.add("show");
+    } else {
+      warnBox.classList.remove("show");
     }
 
+    const d = data.diff || {};
+    const p = data.personalized || {};
+    const page = data.pageContext || {};
 
-    function showError(msg) {
-      const b = $('error-banner');
-      b.textContent = msg;
-      b.classList.add('show');
-    }
+    console.log("[AdMorph] diff.before:", d.before);
+    console.log("[AdMorph] diff.after:", d.after);
+    console.log("[AdMorph] personalized.heroBody:", p.heroBody);
+    console.log("[AdMorph] pageContext:", page);
 
-    function clearError() {
-      $('error-banner').classList.remove('show');
-    }
+    $("page-previews").innerHTML = [
+      renderPreviewCard({
+        variant: "before",
+        page,
+        headline: d.before?.headline || page.h1,
+        subheadline: d.before?.subheadline || page.h2,
+        body: page.metaDescription,
+        ctaText: d.before?.ctaText || page.ctaButtons?.[0],
+        metaDescription: d.before?.metaDescription || page.metaDescription,
+      }),
+      renderPreviewCard({
+        variant: "after",
+        page,
+        headline: d.after?.headline || p.headline,
+        subheadline: d.after?.subheadline || p.subheadline,
+        body: p.heroBody,
+        ctaText: d.after?.ctaText || p.ctaText,
+        metaDescription: d.after?.metaDescription || p.metaDescription,
+      }),
+    ].join("");
 
-    async function handleSubmit() {
-      clearError();
-      const pageUrl  = $('page-url').value.trim();
-      const adUrl    = $('ad-url').value.trim();
-      const adFile   = $('ad-file').files[0];
+    const diffRows = [
+      { label: "Headline",    before: d.before?.headline,    after: d.after?.headline },
+      { label: "Subheadline", before: d.before?.subheadline, after: d.after?.subheadline },
+      { label: "CTA button",  before: d.before?.ctaText,     after: d.after?.ctaText },
+      { label: "Hero copy",   before: null,                  after: p.heroBody },
+      { label: "Meta desc",   before: d.before?.metaDescription, after: d.after?.metaDescription },
+    ];
 
-      if (!pageUrl)        return showError('Please enter your landing page URL.');
-      if (!adFile && !adUrl) return showError('Please upload an ad image or paste an image URL.');
-
-      $('form-section').style.display = 'none';
-      $('loading').classList.add('show');
-      startLoader();
-
-      try {
-        const form = new FormData();
-        form.append('landingPageUrl', pageUrl);
-        if (adFile)  form.append('adImage', adFile);
-        else         form.append('adImageUrl', adUrl);
-
-        const API = window.location.hostname === 'localhost' ? 'http://localhost:3001' : '';
-        const res  = await fetch(`${API}/api/personalize`, { method: 'POST', body: form });
-        const data = await res.json();
-
-        stopLoader();
-        $('loading').classList.remove('show');
-
-        if (!res.ok || !data.success) throw new Error(data.error || 'Something went wrong.');
-
-        renderResults(data);
-
-      } catch (err) {
-        stopLoader();
-        $('loading').classList.remove('show');
-        $('form-section').style.display = 'block';
-        showError(err.message);
-      }
-    }
-
-
-    function renderResults(data) {
-      const ad = data.adAnalysis;
-      const p  = data.personalized;
-      const d  = data.diff;
-
-
-      const pillFields = [
-        ['Offer',    ad.primaryOffer],
-        ['Audience', ad.targetAudience],
-        ['Tone',     ad.tone],
-        ['Urgency',  ad.urgency],
-        ['Ad CTA',   ad.ctaText],
-      ];
-      $('ad-pills').innerHTML = pillFields
-        .filter(([,v]) => v)
-        .map(([k,v]) => `<div class="pill"><strong>${k}:</strong> ${v}</div>`)
-        .join('');
-
-      /* warnings */
-      if (data.warnings && data.warnings.length) {
-        $('warning-box').textContent = '⚠ ' + data.warnings.join(' — ');
-        $('warning-box').classList.add('show');
-      }
-
-      /* diff rows */
-      const rows = [
-        ['Headline',     d.before.headline,       d.after.headline],
-        ['Subheadline',  d.before.subheadline,    d.after.subheadline],
-        ['CTA button',   d.before.ctaText,        d.after.ctaText],
-        ['Hero copy',    '—',                     p.heroBody],
-      ];
-      $('diff-rows').innerHTML = rows.map(([label, before, after]) => `
+    $("diff-rows").innerHTML = diffRows.map(({ label, before, after }) => {
+      const beforeText  = before?.trim() || null;
+      const afterText   = after?.trim()  || null;
+      const beforeClass = beforeText ? "diff-before" : "diff-before empty";
+      const beforeDisplay = beforeText || "(not found on page)";
+      const afterDisplay  = afterText  || "(not generated)";
+      return `
         <div class="diff-row">
           <div class="diff-row-label">${label}</div>
-          <div class="diff-before">${before || '—'}</div>
-          <div class="diff-after">${after || '—'}</div>
-        </div>
-      `).join('');
+          <div class="${beforeClass}">${beforeDisplay}</div>
+          <div class="diff-after">${afterDisplay}</div>
+        </div>`;
+    }).join("");
 
-      /* rationale */
-      $('rationale').innerHTML = `<p>${p.changeRationale || 'Changes aligned to ad audience and offer.'}</p>`;
 
-      $('results').classList.add('show');
-      $('results').scrollIntoView({ behavior: 'smooth' });
-    }
+    $("rationale").innerHTML = `<p>${p.changeRationale || "Copy aligned to match the ad's message and target audience."}</p>`;
 
-    /* ── RESET ── */
-    function resetForm() {
-      $('results').classList.remove('show');
-      $('warning-box').classList.remove('show');
-      $('form-section').style.display = 'block';
-      $('ad-file').value = '';
-      $('ad-url').value = '';
-      $('page-url').value = '';
-      $('img-preview').style.display = 'none';
-      clearError();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  </script>
+    $("results").classList.add("show");
+    $("results").scrollIntoView({ behavior:"smooth" });
+    console.log("[AdMorph] Render complete.");
+  }
 
+  function resetForm() {
+    $("results").classList.remove("show");
+    $("scrape-note").classList.remove("show");
+    $("warning-box").classList.remove("show");
+    $("page-previews").innerHTML = "";
+    $("form-section").style.display = "block";
+    $("ad-file").value = $("ad-url").value = $("page-url").value = "";
+    $("img-preview").style.display = "none";
+    clearError();
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+</script>
 </body>
 </html>

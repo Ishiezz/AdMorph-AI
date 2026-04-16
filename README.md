@@ -1,195 +1,128 @@
-# AdMorph-AI
-### A Landing Page Personalizer
- 
-AdMorph AI is a real-time personalization engine that aligns landing page messaging with ad intent to improve conversion rates without modifying the underlying website.
- 
----
- 
+# AdMorph AI
+
+AdMorph AI is an ad-to-landing-page personalization engine that improves message match between an ad creative and the page a user lands on.
+
+The system takes:
+
+1. an ad creative, via upload or direct image URL
+2. a landing page URL
+
+and returns a personalized version of the page messaging while preserving the original page identity.
+
 ## What It Does
- 
-When users click an ad and land on a generic homepage, conversion drops. This tool fixes that by:
- 
-1. **Reading the ad** — Uses Claude Vision AI to extract offer, audience, tone, CTA, and urgency
-2. **Scraping the landing page** — Extracts existing H1, H2, CTA, and body copy
-3. **Generating personalized copy** — Rewrites only headline, subheadline, CTA, and hero copy to match the ad
-4. **Showing a before/after diff** — Clear comparison of what changed and why
- 
-> The page layout, structure, navigation, and brand identity remain unchanged — only the messaging is intelligently optimized to align with the ad.
- 
----
- 
-## System Flow
- 
-```
-User Input
-├── Ad Creative (image upload or URL)
-└── Landing Page URL
-         │
-         ▼
-┌─────────────────────────┐
-│   Ad Analysis Agent     │  ← Claude Vision (GPT-4o class)
-│   Extracts: offer,      │    temperature=0 for consistency
-│   audience, tone, CTA   │
-└────────────┬────────────┘
-             │
-┌─────────────────────────┐
-│   Page Scraper          │  ← Cheerio + Axios
-│   Extracts: H1, H2,     │    Fallback: manual paste
-│   CTA buttons, body     │
-└────────────┬────────────┘
-             │
-┌─────────────────────────┐
-│   Personalization Agent │  ← Claude (low temperature)
-│   Rewrites ONLY:        │    Strict prompt = no hallucination
-│   headline, sub, CTA,   │    Whitelist of changeable fields
-│   hero body copy        │
-└────────────┬────────────┘
-             │
-┌─────────────────────────┐
-│   Validation Layer      │  ← Hallucination guard
-│   Flags invented         │    Checks numbers not in source
-│   figures/claims        │
-└────────────┬────────────┘
-             │
-         Output
-    Before/After Diff
-    + Rationale
-    + Warnings (if any)
-```
- 
----
- 
-## Edge Case Handling
- 
-| Problem | Solution |
-|---|---|
-| **Broken UI / JS-heavy pages** | Cheerio scraper + fallback to manual copy paste |
-| **Hallucinations** | Prompt instructs: "only use info from ad and page". Low temp (0.2). Number checker post-generation |
-| **Inconsistent outputs** | `temperature: 0.2` + structured JSON schema response |
-| **Random / out-of-scope changes** | Strict whitelist — only 4 fields can change. All else locked |
-| **Scraping failures** | Returns `requiresManualInput: true` and asks user to paste |
- 
----
- 
+
+AdMorph AI is intentionally non-destructive. It does not redesign the page or generate a brand new website. Instead, it updates only the highest-leverage copy fields:
+
+- headline
+- subheadline
+- CTA text
+- meta description
+- hero body copy
+
+The result is shown as:
+
+- structured ad insights
+- a before/after diff
+- a reconstructed original vs personalized landing-page hero preview
+- rationale and warnings when needed
+
+## How It Works
+
+The system runs in five stages:
+
+1. Scrape the landing page using Axios and Cheerio
+2. Analyze the ad creative with Gemini
+3. Generate personalized copy from the combined ad + page context
+4. Validate the output for suspicious invented claims
+5. Present the result as a reviewable before/after experience
+
 ## Tech Stack
- 
-| Layer | Tech |
+
+| Layer | Choice |
 |---|---|
-| Frontend | Vanilla HTML/CSS/JS (no framework needed) |
+| Frontend | Vanilla HTML/CSS/JS |
 | Backend | Node.js + Express |
-| AI Vision | Anthropic Claude (claude-opus-4-5) |
 | Scraping | Axios + Cheerio |
-| File Uploads | Multer |
-| Deployment | Railway / Render / Vercel |
- 
----
- 
-## Project Structure
- 
-```
-AdMorph-AI/
-├── backend/
-│   ├── server.js          # Express API — all logic lives here
-│   ├── package.json
-│   └── .env.example       # Copy to .env, add your API key
-├── frontend/
-│   └── public/
-│       └── index.html     # Complete frontend (single file)
-├── .gitignore
-└── README.md
-```
- 
----
- 
-## Setup & Run Locally
- 
+| Uploads | Multer |
+| AI | Gemini |
+
+## Product Principles
+
+- Non-destructive personalization: preserve the page shell, improve the message
+- Transparency: show what changed and why
+- Trust: constrain the model to editable fields only
+- Graceful degradation: handle scrape failures, image failures, and model issues without crashing the experience
+
+## Edge Case Handling
+
+### Hallucinations
+
+- prompts explicitly forbid invented prices, stats, and unsupported claims
+- a post-generation validator flags suspicious numbers not found in the source material
+
+### Inconsistent Outputs
+
+- low temperatures are used for more stable generation
+- the output is requested in strict JSON format
+- the parser extracts and validates only the structured object
+
+### JS-Rendered Pages
+
+- the scraper retries on timeouts and network failures
+- low-content pages are flagged as JavaScript-rendered
+- the app falls back gracefully instead of crashing
+
+### Image Input Failures
+
+- image URLs are validated by content type
+- unsupported MIME types are rejected before the Gemini call
+- uploads and public image URLs are both supported
+
+## Running Locally
+
 ```bash
-# 1. Clone the repo
-git clone https://github.com/Ishiezz/AdMorph-AI.git
-cd AdMorph-AI
- 
-# 2. Install backend deps
 cd backend
 npm install
- 
-# 3. Set up environment
-cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
- 
-# 4. Start the backend
-npm run dev
-# Runs on http://localhost:3001
- 
-# 5. Open the frontend
-# Just open frontend/public/index.html in your browser
-# Or serve it: npx serve frontend/public
+npm start
 ```
- 
----
- 
-## API Endpoint
- 
+
+Then open:
+
+- `http://localhost:3001/`
+
+You can also open `frontend/public/index.html` directly, since the frontend falls back to `http://localhost:3001` when loaded from `file://`.
+
+## Environment
+
+Create `backend/.env` with:
+
+```bash
+GEMINI_API_KEY=your_key_here
+PORT=3001
+```
+
+Optional:
+
+```bash
+GEMINI_MODELS=gemini-2.5-flash-lite,gemini-2.0-flash
+```
+
+## API
+
 ### `POST /api/personalize`
- 
-**Form Data:**
-| Field | Type | Required |
-|---|---|---|
-| `landingPageUrl` | string | Yes |
-| `adImage` | file | One of these |
-| `adImageUrl` | string | One of these |
- 
-**Response:**
-```json
-{
-  "success": true,
-  "adAnalysis": {
-    "primaryOffer": "50% off for students",
-    "targetAudience": "College students",
-    "tone": "Fun, youthful",
-    "ctaText": "Claim your discount",
-    "urgency": "high"
-  },
-  "personalized": {
-    "headline": "Students save 50% — today only",
-    "subheadline": "The fastest way to get started, at a price made for you.",
-    "ctaText": "Claim your discount",
-    "heroBody": "Built for students who want more without paying full price.",
-    "changeRationale": "Aligned headline with student offer from ad. Matched urgency.",
-    "changesApplied": ["Headline updated", "CTA matched ad", "Urgency added"]
-  },
-  "diff": {
-    "before": { "headline": "Welcome to Troopod", "ctaText": "Get Started" },
-    "after":  { "headline": "Students save 50% — today only", "ctaText": "Claim your discount" }
-  },
-  "warnings": []
-}
-```
- 
----
 
-## Why This Improves Conversion
+Form fields:
 
-- Reduces cognitive dissonance between ad and landing page  
-- Reinforces user intent immediately  
-- Improves clarity and relevance  
-- Increases trust by matching expectations set by the ad  
- 
-## What I'd Build Next (PM Roadmap)
- 
-- **A/B test integration** — Auto-generate 2-3 variants and split-test which converts best
-- **Analytics overlay** — Show predicted CVR lift based on CRO principles applied
-- **Multi-element support** — Personalize images, social proof, and FAQ sections
-- **Batch mode** — Input 10 ad variants, get 10 personalized page variants instantly
-- **Chrome extension** — Personalize any live page directly from the browser
- 
----
- 
-## Assumptions Made
- 
-1. The landing page is publicly accessible (no login required)
-2. The ad is image-based (not video)
-3. The page uses standard HTML structure (H1, H2, CTAs)
-4. "Personalization" means copy changes only — not layout, images, or brand elements
-5. The user has an Anthropic API key
- 
----
+- `landingPageUrl` required
+- `adImage` optional file upload
+- `adImageUrl` optional direct image URL
+
+One of `adImage` or `adImageUrl` must be provided.
+
+### `GET /api/health`
+
+Returns basic status and configured Gemini models.
+
+## Demo Note
+
+The system supports both uploaded images and public URLs. For local demos, an image can also be served from `frontend/public/demo-assets/` for stability.
